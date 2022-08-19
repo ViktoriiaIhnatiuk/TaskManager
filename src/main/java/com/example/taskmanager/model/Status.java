@@ -1,12 +1,7 @@
 package com.example.taskmanager.model;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "statuses")
@@ -15,9 +10,14 @@ public class Status {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Enumerated(value =EnumType.STRING)
+    @Column(unique = true)
     private StatusName statusName;
 
     public Status() {
+    }
+
+    public Status(StatusName statusName) {
+    this.statusName = statusName;
     }
 
     public Long getId() {
@@ -44,9 +44,22 @@ public class Status {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Status status = (Status) o;
+        return Objects.equals(id, status.id) && statusName == status.statusName;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, statusName);
+    }
+
     public enum StatusName {
         TO_DO,
         IN_PROGRESS,
-        DONE
+        DONE;
     }
 }

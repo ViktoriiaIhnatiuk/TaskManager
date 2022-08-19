@@ -1,20 +1,30 @@
 package com.example.taskmanager.service.impl;
 
+import com.example.taskmanager.model.Status;
 import com.example.taskmanager.model.TaskList;
 import com.example.taskmanager.repository.TaskListRepository;
+import com.example.taskmanager.service.StatusService;
 import com.example.taskmanager.service.TaskListServise;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class TaskListServiceImpl implements TaskListServise {
     private final TaskListRepository taskListRepository;
+    private final StatusService statusService;
 
-    public TaskListServiceImpl(TaskListRepository taskListRepository) {
+    public TaskListServiceImpl(TaskListRepository taskListRepository,
+                               StatusService statusService) {
         this.taskListRepository = taskListRepository;
+        this.statusService = statusService;
     }
 
     @Override
     public TaskList createTaskList(TaskList taskList) {
+        if (taskList.getStatus() == null) {
+            taskList.setStatus(statusService.getStatusByName(Status.StatusName.TO_DO));
+        }
         return taskListRepository.save(taskList);
     }
 
@@ -41,11 +51,13 @@ public class TaskListServiceImpl implements TaskListServise {
         if (taskList.getTasks() != null) {
             taskListToUpdate.setTasks(taskList.getTasks());
         }
-        return null;
+        return taskListToUpdate;
     }
 
     @Override
-    public TaskList deleteTaskList(Long taskList) {
-        return null;
+    public void deleteTaskList(Long taskListId) {
+        TaskList taskListToDelete = getTaskListById(taskListId);
+        taskListRepository.delete(taskListToDelete);
+//        return taskListToDelete;
     }
 }

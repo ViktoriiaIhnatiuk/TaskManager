@@ -21,6 +21,12 @@ public class StatusServiceImpl implements StatusService {
     }
 
     @Override
+    public Status getStatusByName(Status.StatusName statusName) {
+        return statusRepository.findByStatusName(statusName).orElseThrow(
+                () -> new RuntimeException("Can't find status by statusName " + statusName));
+    }
+
+    @Override
     public Status getStatusById(Long statusId) {
         return statusRepository.findById(statusId).orElseThrow(
                 () -> new RuntimeException("Can't find status bu id " + statusId));

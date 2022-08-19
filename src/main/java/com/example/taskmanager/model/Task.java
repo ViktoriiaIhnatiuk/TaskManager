@@ -13,6 +13,8 @@ public class Task {
     @ManyToOne
     private Status status;
     private LocalDateTime date;
+    @ManyToOne
+    private TaskList taskList;
     private boolean isTerminated;
 
     public Task() {
@@ -58,6 +60,14 @@ public class Task {
         isTerminated = terminated;
     }
 
+    public TaskList getTaskList() {
+        return taskList;
+    }
+
+    public void setTaskList(TaskList taskList) {
+        this.taskList = taskList;
+    }
+
     @Override
     public String toString() {
         return "Task{" +
@@ -65,6 +75,7 @@ public class Task {
                 ", name='" + name + '\'' +
                 ", status=" + status +
                 ", date=" + date +
+                ", taskList=" + taskList +
                 ", isTerminated=" + isTerminated +
                 '}';
     }

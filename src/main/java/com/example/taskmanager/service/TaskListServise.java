@@ -9,5 +9,5 @@ public interface TaskListServise {
     TaskList getTaskListById(Long taskListId);
     List<TaskList> getAllTaskLists();
     TaskList updateTaskListById(Long taskListId, TaskList taskList);
-    TaskList deleteTaskList (Long taskList);
+    void deleteTaskList (Long taskList);
 }
