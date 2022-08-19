@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "task-lists")
+@Table(name = "task_lists")
 public class TaskList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,7 +13,7 @@ public class TaskList {
     private String name;
     @ManyToOne
     private Status status;
-    @OneToMany
+    @OneToMany(cascade = {CascadeType.REMOVE}, mappedBy = "taskList")
     private List<Task> tasks;
     private LocalDateTime deadline;
     @ManyToOne
