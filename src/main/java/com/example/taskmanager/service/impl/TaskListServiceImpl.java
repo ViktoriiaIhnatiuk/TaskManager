@@ -51,6 +51,10 @@ public class TaskListServiceImpl implements TaskListServise {
         if (taskList.getTasks() != null) {
             taskListToUpdate.setTasks(taskList.getTasks());
         }
+        if (taskList.getStatus() != null) {
+            taskListToUpdate.setStatus(taskList.getStatus());
+        }
+        createTaskList(taskListToUpdate);
         return taskListToUpdate;
     }
 
