@@ -31,7 +31,17 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task creteTask(Long taskListId, Task task) {
         TaskList taskListById = taskListServise.getTaskListById(taskListId);
-        task.setTaskList(taskListById);
+        if (!taskListById.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
+            task.setTaskList(taskListById);
+        } else {
+            throw new RuntimeException("Can't add task to tasklist by id "
+                    + taskListId + "because tasklist is already done");
+        }
+        if (task.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
+            task.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
+            System.out.println("You can not create task with status \"Done\"," +
+                    "task has got status \"In progress\"");
+        }
         if (task.getStatus() == null) {
             task.setStatus(statusService.getStatusByName(Status.StatusName.TO_DO));
         }
@@ -42,6 +52,8 @@ public class TaskServiceImpl implements TaskService {
             taskListById.setTasks(tasks);
             taskListServise.createTaskList(taskListById);
         }
+
+        taskListStatusUpdate(newTask);
         return newTask;
     }
 
@@ -57,18 +69,17 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findAll();
     }
 
+    @Transactional
     @Override
     public Task updateTaskById(Long taskId, Task task) {
-        Task taskToUpdate = new Task();
+        Task taskToUpdate = getTaskById(taskId);
         if (task.getName() != null) {
             taskToUpdate.setName(task.getName());
         }
         if (task.getStatus() != null) {
             taskToUpdate.setStatus(task.getStatus());
         }
-        if (task.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
-            taskToUpdate.setDate(LocalDateTime.now());
-        }
+        taskListStatusUpdate(taskToUpdate);
         return taskRepository.save(taskToUpdate);
     }
 
@@ -77,5 +88,32 @@ public class TaskServiceImpl implements TaskService {
         Task taskToDelete = getTaskById(taskId);
         taskRepository.delete(taskToDelete);
         return taskToDelete;
+    }
+
+    private void taskListStatusUpdate(Task taskToUpdate) {
+        TaskList taskList = taskToUpdate.getTaskList();
+        Long doneTasksCounter = taskList.getCounter();
+        if (!taskList.getStatus().getStatusName().equals(taskToUpdate.getStatus().getStatusName())
+        && taskToUpdate.getStatus().getId() > taskList.getStatus().getId()
+                && !taskToUpdate.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
+            taskList.setStatus(taskToUpdate.getStatus());
+        }
+
+        if (!taskList.getStatus().getStatusName().equals(Status.StatusName.DONE)
+                && !taskList.getStatus().getStatusName().equals(Status.StatusName.IN_PROGRESS)
+                && taskToUpdate.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
+            taskList.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
+        }
+
+        if (taskToUpdate.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
+            taskToUpdate.setDate(LocalDateTime.now());
+            doneTasksCounter++;
+            taskList.setCounter(doneTasksCounter);
+        }
+
+        if(doneTasksCounter == taskList.getTasks().size()) {
+            taskList.setStatus(statusService.getStatusByName(Status.StatusName.DONE));
+        }
+        taskListServise.createTaskList(taskList);
     }
 }

@@ -52,4 +52,10 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(userToDelete);
         return userToDelete;
     }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return userRepository.findUserByEmail(email).orElseThrow(
+                () -> new RuntimeException("Can`t find user by email " + email));
+    }
 }

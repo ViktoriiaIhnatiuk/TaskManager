@@ -19,6 +19,8 @@ public class TaskList {
     @ManyToOne
     private User user;
 
+    private long counter;
+
     public TaskList() {
     }
 
@@ -70,6 +72,14 @@ public class TaskList {
         this.user = user;
     }
 
+    public Long getCounter() {
+        return counter;
+    }
+
+    public void setCounter(Long counter) {
+        this.counter = counter;
+    }
+
     @Override
     public String toString() {
         return "TaskList{" +
@@ -79,6 +89,7 @@ public class TaskList {
                 ", tasks=" + tasks +
                 ", deadline=" + deadline +
                 ", user=" + user +
+                ", counter=" + counter +
                 '}';
     }
 }
