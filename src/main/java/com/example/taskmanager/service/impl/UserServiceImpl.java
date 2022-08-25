@@ -3,20 +3,24 @@ package com.example.taskmanager.service.impl;
 import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.UserRepository;
 import com.example.taskmanager.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
+    private final PasswordEncoder encoder;
     private final UserRepository userRepository;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(PasswordEncoder encoder, UserRepository userRepository) {
+        this.encoder = encoder;
         this.userRepository = userRepository;
     }
 
     @Override
     public User createUser(User user) {
+        user.setPassword(encoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 

@@ -1,14 +1,11 @@
 package com.example.taskmanager.config;
 
-import com.example.taskmanager.model.Role;
-import com.example.taskmanager.model.Status;
-import com.example.taskmanager.model.User;
-import com.example.taskmanager.service.RoleService;
-import com.example.taskmanager.service.StatusService;
-import com.example.taskmanager.service.UserService;
+import com.example.taskmanager.model.*;
+import com.example.taskmanager.service.*;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Component
@@ -16,13 +13,19 @@ public class Datainitializer {
     private final StatusService statusService;
     private final UserService userService;
     private final RoleService roleService;
+    private final TaskListServise taskListServise;
+    private final TaskService taskService;
 
     public Datainitializer(StatusService statusService,
                            UserService userService,
-                           RoleService roleService) {
+                           RoleService roleService,
+                           TaskListServise taskListServise,
+                           TaskService taskService) {
         this.statusService = statusService;
         this.userService = userService;
         this.roleService = roleService;
+        this.taskListServise = taskListServise;
+        this.taskService = taskService;
     }
 
     @PostConstruct
@@ -33,6 +36,21 @@ public class Datainitializer {
         statusService.createStatus(inProgressStatus);
         Status doneStatus = new Status(Status.StatusName.DONE);
         statusService.createStatus(doneStatus);
+        Status terminatedStatus = new Status(Status.StatusName.TERMINATED);
+        statusService.createStatus(terminatedStatus);
+//        TaskList taskListOne = new TaskList();
+//        LocalDateTime deadline = LocalDateTime.parse("2022-08-23T18:25:00.000000");
+//        taskListOne.setName("One");
+//        taskListOne.setDeadline(deadline);
+//        TaskList taskList = taskListServise.createTaskList(taskListOne);
+//        Task taskOne = new Task();
+//        taskOne.setName("1");
+//        taskOne.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
+//        taskService.creteTask(taskList.getId(), taskOne);
+//        Task taskTwo = new Task();
+//        taskTwo.setName("2");
+//        taskTwo.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
+//        taskService.creteTask(taskList.getId(), taskTwo);
     }
 
     @PostConstruct
@@ -57,4 +75,5 @@ public class Datainitializer {
         user.setRoles(Set.of(role));
         userService.createUser(user);
     }
+
 }

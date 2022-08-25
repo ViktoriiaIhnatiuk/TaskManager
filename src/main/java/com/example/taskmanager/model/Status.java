@@ -60,7 +60,7 @@ public class Status {
     public enum StatusName {
         TO_DO,
         IN_PROGRESS,
-        DONE;
-
+        DONE,
+        TERMINATED;
     }
 }

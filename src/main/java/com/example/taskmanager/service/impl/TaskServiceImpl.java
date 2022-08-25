@@ -31,6 +31,9 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task creteTask(Long taskListId, Task task) {
         TaskList taskListById = taskListServise.getTaskListById(taskListId);
+        if (task.getStatus() == null) {
+            task.setStatus(statusService.getStatusByName(Status.StatusName.TO_DO));
+        }
         if (!taskListById.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
             task.setTaskList(taskListById);
         } else {
@@ -41,9 +44,6 @@ public class TaskServiceImpl implements TaskService {
             task.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
             System.out.println("You can not create task with status \"Done\"," +
                     "task has got status \"In progress\"");
-        }
-        if (task.getStatus() == null) {
-            task.setStatus(statusService.getStatusByName(Status.StatusName.TO_DO));
         }
         Task newTask = taskRepository.save(task);
         if (newTask != null) {
@@ -111,8 +111,19 @@ public class TaskServiceImpl implements TaskService {
             taskList.setCounter(doneTasksCounter);
         }
 
-        if(doneTasksCounter == taskList.getTasks().size()) {
+        if(doneTasksCounter == taskList.getTasks().size()
+        && ! (taskList.getTasks().stream()
+                .map(Task::getDate)
+                .filter(e -> e.isAfter(taskList.getDeadline()))
+                .count() > 0)) {
             taskList.setStatus(statusService.getStatusByName(Status.StatusName.DONE));
+
+        } else if (doneTasksCounter == taskList.getTasks().size()
+                && (taskList.getTasks().stream()
+                .map(Task::getDate)
+                .filter(e -> e.isAfter(taskList.getDeadline()))
+                .count() > 0)){
+            taskList.setStatus(statusService.getStatusByName(Status.StatusName.TERMINATED));
         }
         taskListServise.createTaskList(taskList);
     }
