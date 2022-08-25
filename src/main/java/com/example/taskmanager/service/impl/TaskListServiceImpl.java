@@ -5,6 +5,9 @@ import com.example.taskmanager.model.TaskList;
 import com.example.taskmanager.repository.TaskListRepository;
 import com.example.taskmanager.service.StatusService;
 import com.example.taskmanager.service.TaskListServise;
+import com.example.taskmanager.service.UserService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,11 +16,14 @@ import java.util.List;
 public class TaskListServiceImpl implements TaskListServise {
     private final TaskListRepository taskListRepository;
     private final StatusService statusService;
+    private final UserService userService;
 
     public TaskListServiceImpl(TaskListRepository taskListRepository,
-                               StatusService statusService) {
+                               StatusService statusService,
+                               UserService userService) {
         this.taskListRepository = taskListRepository;
         this.statusService = statusService;
+        this.userService = userService;
     }
 
     @Override
@@ -25,6 +31,9 @@ public class TaskListServiceImpl implements TaskListServise {
         if (taskList.getStatus() == null) {
             taskList.setStatus(statusService.getStatusByName(Status.StatusName.TO_DO));
         }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        taskList.setUser(userService.getUserByEmail(currentPrincipalName));
         return taskListRepository.save(taskList);
     }
 
