@@ -7,6 +7,9 @@ import com.example.taskmanager.repository.TaskRepository;
 import com.example.taskmanager.service.StatusService;
 import com.example.taskmanager.service.TaskListServise;
 import com.example.taskmanager.service.TaskService;
+import com.example.taskmanager.service.UserService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,19 +21,27 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final StatusService statusService;
     private final TaskListServise taskListServise;
+    private final UserService userService;
 
     public TaskServiceImpl(TaskRepository taskRepository,
                            StatusService statusService,
-                           TaskListServise taskListServise) {
+                           TaskListServise taskListServise,
+                           UserService userService) {
         this.taskRepository = taskRepository;
         this.statusService = statusService;
         this.taskListServise = taskListServise;
+        this.userService = userService;
     }
 
     @Transactional
     @Override
     public Task creteTask(Long taskListId, Task task) {
         TaskList taskListById = taskListServise.getTaskListById(taskListId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        if (taskListById.getUser() != userService.getUserByEmail(currentPrincipalName)) {
+            throw new RuntimeException("Please, choose a correct tasklist");
+        }
         if (task.getStatus() == null) {
             task.setStatus(statusService.getStatusByName(Status.StatusName.TO_DO));
         }
@@ -52,7 +63,6 @@ public class TaskServiceImpl implements TaskService {
             taskListById.setTasks(tasks);
             taskListServise.createTaskList(taskListById);
         }
-
         taskListStatusUpdate(newTask);
         return newTask;
     }
@@ -66,7 +76,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        return taskRepository.getAllTasksByUserEmail(currentPrincipalName);
     }
 
     @Transactional
