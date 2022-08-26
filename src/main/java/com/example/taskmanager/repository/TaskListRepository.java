@@ -9,5 +9,10 @@ import java.util.List;
 
 @Repository
 public interface TaskListRepository extends JpaRepository<TaskList, Long> {
-    List<TaskList> findAll();
+    @Query(value = "SELECT* " +
+            "FROM task_lists t " +
+            "JOIN users u " +
+            "ON t.user_id = u.id " +
+            "WHERE u.email = ?", nativeQuery = true)
+    List<TaskList> getAllByUserName(String userName);
 }
