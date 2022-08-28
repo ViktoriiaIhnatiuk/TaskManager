@@ -4,7 +4,7 @@ import com.example.taskmanager.exception.AuthenticationException;
 import com.example.taskmanager.model.User;
 
 public interface AuthenticationService {
-    User register(String email, String password);
+    User register(String username, String email, String password);
 
     User login(String email, String password) throws AuthenticationException;
 }

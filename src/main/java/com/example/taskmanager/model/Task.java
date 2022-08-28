@@ -1,7 +1,12 @@
 package com.example.taskmanager.model;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "tasks")
@@ -15,6 +20,8 @@ public class Task {
     private LocalDateTime date;
     @ManyToOne
     private TaskList taskList;
+    @ManyToOne
+    private Priority priority;
     private boolean isTerminated;
 
     public Task() {
@@ -52,14 +59,6 @@ public class Task {
         this.date = date;
     }
 
-    public boolean isTerminated() {
-        return isTerminated;
-    }
-
-    public void setTerminated(boolean terminated) {
-        isTerminated = terminated;
-    }
-
     public TaskList getTaskList() {
         return taskList;
     }
@@ -68,15 +67,32 @@ public class Task {
         this.taskList = taskList;
     }
 
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public boolean getIsTerminated() {
+        return isTerminated;
+    }
+
+    public void setIsTerminated(boolean terminated) {
+        isTerminated = terminated;
+    }
+
     @Override
     public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", status=" + status +
-                ", date=" + date +
-                ", taskList=" + taskList +
-                ", isTerminated=" + isTerminated +
-                '}';
+        return "Task{"
+                + "id=" + id
+                + ", name='" + name
+                + ", status=" + status
+                + ", date=" + date
+                + ", taskList=" + taskList
+                + ", priority=" + priority
+                + ", isTerminated=" + isTerminated
+                + '}';
     }
 }

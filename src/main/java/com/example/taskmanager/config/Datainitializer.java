@@ -1,14 +1,21 @@
 package com.example.taskmanager.config;
 
-import com.example.taskmanager.model.*;
+import com.example.taskmanager.model.Priority;
+import com.example.taskmanager.model.Role;
+import com.example.taskmanager.model.Status;
+import com.example.taskmanager.model.Task;
+import com.example.taskmanager.model.TaskList;
+import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.TaskListRepository;
 import com.example.taskmanager.repository.TaskRepository;
-import com.example.taskmanager.service.*;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
+import com.example.taskmanager.service.PriorityService;
+import com.example.taskmanager.service.RoleService;
+import com.example.taskmanager.service.StatusService;
+import com.example.taskmanager.service.UserService;
 import java.time.LocalDateTime;
 import java.util.Set;
+import javax.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
 
 @Component
 public class Datainitializer {
@@ -16,20 +23,20 @@ public class Datainitializer {
     private final UserService userService;
     private final RoleService roleService;
     private final TaskRepository taskRepository;
-    private final TaskService taskService;
+    private final PriorityService priorityService;
     private final TaskListRepository taskListRepository;
 
     public Datainitializer(StatusService statusService,
                            UserService userService,
                            RoleService roleService,
                            TaskRepository taskRepository,
-                           TaskService taskService,
+                           PriorityService priorityService,
                            TaskListRepository taskListRepository) {
         this.statusService = statusService;
         this.userService = userService;
         this.roleService = roleService;
         this.taskRepository = taskRepository;
-        this.taskService = taskService;
+        this.priorityService = priorityService;
         this.taskListRepository = taskListRepository;
     }
 
@@ -73,34 +80,56 @@ public class Datainitializer {
         Status terminatedStatus = new Status(Status.StatusName.TERMINATED);
         statusService.createStatus(terminatedStatus);
 
+        Priority lowPriority = new Priority();
+        lowPriority.setPriorityName(Priority.PriorityName.LOW);
+        priorityService.createPriority(lowPriority);
+        Priority mediumPriority = new Priority();
+        mediumPriority.setPriorityName(Priority.PriorityName.MEDIUM);
+        priorityService.createPriority(mediumPriority);
+        Priority highPriority = new Priority();
+        highPriority.setPriorityName(Priority.PriorityName.HIGH);
+        priorityService.createPriority(highPriority);
+
         TaskList taskListOne = new TaskList();
         LocalDateTime deadline = LocalDateTime.parse("2022-08-23T18:25:00.000000");
-        taskListOne.setName("One");
+        taskListOne.setName("John's taskList");
+        taskListOne.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS.name()));
         taskListOne.setUser(johnDoe);
         taskListOne.setDeadline(deadline);
+        taskListOne.setPriority(highPriority);
         TaskList johnTaskList = taskListRepository.save(taskListOne);
-        Task taskOne = new Task();
-        taskOne.setName("1");
-        taskOne.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
-        taskOne.setTaskList(johnTaskList);
-        taskRepository.save(taskOne);
-        Task taskTwo = new Task();
-        taskTwo.setName("2");
-        taskTwo.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
-        taskTwo.setTaskList(johnTaskList);
-        taskRepository.save(taskTwo);
-//
-//        LocalDateTime deadline2 = LocalDateTime.parse("2022-10-23T18:25:00.000000");
-//        taskListOne.setName("Two");
-//        taskListOne.setUser(johnDoe);
-//        taskListOne.setDeadline(deadline2);
-//        TaskList johnTaskListTwo = taskListRepository.save(taskListOne);
-//        taskOne.setName("1");
-//        taskOne.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
-//        taskService.creteTask(johnTaskListTwo.getId(), taskOne);
-//        taskTwo.setName("2");
-//        taskTwo.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
-//        taskTwo.setTaskList(johnTaskList);
-//        taskRepository.save(taskTwo);
+        Task johnTask1 = new Task();
+        johnTask1.setName("John's task1");
+        johnTask1.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS.name()));
+        johnTask1.setTaskList(johnTaskList);
+        johnTask1.setPriority(lowPriority);
+        taskRepository.save(johnTask1);
+        Task johnTask2 = new Task();
+        johnTask2.setName("John's task2");
+        johnTask2.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS.name()));
+        johnTask2.setTaskList(johnTaskList);
+        johnTask2.setPriority(lowPriority);
+        taskRepository.save(johnTask2);
+
+        TaskList taskListTwo = new TaskList();
+        LocalDateTime deadline2 = LocalDateTime.parse("2022-10-23T18:25:00.000000");
+        taskListTwo.setName("Jane's taskList");
+        taskListTwo.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS.name()));
+        taskListTwo.setUser(janeDoe);
+        taskListTwo.setDeadline(deadline2);
+        taskListTwo.setPriority(lowPriority);
+        TaskList janeTaskList = taskListRepository.save(taskListTwo);
+        Task janeTask1 = new Task();
+        janeTask1.setName("Jane's task1");
+        janeTask1.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS.name()));
+        janeTask1.setTaskList(janeTaskList);
+        janeTask1.setPriority(highPriority);
+        taskRepository.save(janeTask1);
+        Task janeTask2 = new Task();
+        janeTask2.setName("Jane's task2");
+        janeTask2.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS.name()));
+        janeTask2.setTaskList(janeTaskList);
+        janeTask2.setPriority(lowPriority);
+        taskRepository.save(janeTask2);
     }
 }
