@@ -7,11 +7,10 @@ import com.example.taskmanager.repository.UserRepository;
 import com.example.taskmanager.service.AuthenticationService;
 import com.example.taskmanager.service.RoleService;
 import com.example.taskmanager.service.UserService;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -31,8 +30,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public User register(String email, String password) {
+    public User register(String username, String email, String password) {
         User user = new User();
+        user.setName(username);
         user.setEmail(email);
         user.setPassword(password);
         user.setRoles(Set.of(roleService.findAllByRoleName(Role.RoleName.USER.name())));
@@ -49,6 +49,4 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         return user.get();
     }
-
-
 }

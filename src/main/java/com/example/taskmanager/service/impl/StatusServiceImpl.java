@@ -3,9 +3,8 @@ package com.example.taskmanager.service.impl;
 import com.example.taskmanager.model.Status;
 import com.example.taskmanager.repository.StatusRepository;
 import com.example.taskmanager.service.StatusService;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
+import org.springframework.stereotype.Service;
 
 @Service
 public class StatusServiceImpl implements StatusService {
@@ -21,15 +20,15 @@ public class StatusServiceImpl implements StatusService {
     }
 
     @Override
-    public Status getStatusByName(Status.StatusName statusName) {
-        return statusRepository.findByStatusName(statusName).orElseThrow(
+    public Status getStatusByName(String statusName) {
+        return statusRepository.findStatusByName(statusName).orElseThrow(
                 () -> new RuntimeException("Can't find status by statusName " + statusName));
     }
 
     @Override
     public Status getStatusById(Long statusId) {
         return statusRepository.findById(statusId).orElseThrow(
-                () -> new RuntimeException("Can't find status bu id " + statusId));
+                () -> new RuntimeException("Can't find status by id " + statusId));
     }
 
     @Override

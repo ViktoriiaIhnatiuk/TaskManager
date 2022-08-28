@@ -1,5 +1,7 @@
 package com.example.taskmanager.model;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -8,8 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.List;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "task_lists")
@@ -23,11 +24,12 @@ public class TaskList {
     @OneToMany(cascade = {CascadeType.REMOVE}, mappedBy = "taskList")
     private List<Task> tasks;
     private LocalDateTime deadline;
+    @NotNull
     @ManyToOne
     private User user;
-
+    @ManyToOne
+    private Priority priority;
     private boolean isTerminated;
-
     private long counter;
 
     public TaskList() {
@@ -81,33 +83,42 @@ public class TaskList {
         this.user = user;
     }
 
-    public Long getCounter() {
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public boolean getIsTerminated() {
+        return isTerminated;
+    }
+
+    public void setIsTerminated(boolean terminated) {
+        isTerminated = terminated;
+    }
+
+    public long getCounter() {
         return counter;
     }
 
-    public void setCounter(Long counter) {
+    public void setCounter(long counter) {
         this.counter = counter;
     }
 
     @Override
     public String toString() {
-        return "TaskList{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", status=" + status +
-                ", tasks=" + tasks +
-                ", deadline=" + deadline +
-                ", user=" + user +
-                ", counter=" + counter +
-                "isTerminated" + isTerminated +
-                '}';
-    }
-
-    public boolean isTerminated() {
-        return isTerminated;
-    }
-
-    public void setTerminated(boolean terminated) {
-        isTerminated = terminated;
+        return "TaskList{"
+                + "id=" + id
+                + ", name='" + name
+                + ", status=" + status
+                + ", tasks=" + tasks
+                + ", deadline=" + deadline
+                + ", user=" + user
+                + ", priority=" + priority
+                + ", isTerminated=" + isTerminated
+                + ", counter=" + counter
+                + '}';
     }
 }

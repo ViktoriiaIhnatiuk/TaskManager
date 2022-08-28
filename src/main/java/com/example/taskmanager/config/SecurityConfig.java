@@ -31,6 +31,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
     }
+
     @Autowired
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
@@ -57,6 +58,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/tasks/**").hasAnyAuthority(ADMIN, USER)
                 .antMatchers(HttpMethod.POST,
                         "/tasks/**").hasAnyAuthority(ADMIN, USER)
+                .antMatchers(HttpMethod.GET,
+                        "/users/**").hasAuthority(ADMIN)
+                .antMatchers(HttpMethod.PUT,
+                        "/users/**").hasAuthority(ADMIN)
+                .antMatchers(HttpMethod.POST,
+                        "/users/**").hasAuthority(ADMIN)
+                .antMatchers(HttpMethod.GET,
+                        "/statuses/**").hasAuthority(ADMIN)
+                .antMatchers(HttpMethod.PUT,
+                        "/statuses/**").hasAuthority(ADMIN)
+                .antMatchers(HttpMethod.POST,
+                        "/statuses/**").hasAuthority(ADMIN)
+                .antMatchers(HttpMethod.GET,
+                        "/priorities/**").hasAuthority(ADMIN)
+                .antMatchers(HttpMethod.PUT,
+                        "/priorities/**").hasAuthority(ADMIN)
+                .antMatchers(HttpMethod.POST,
+                        "/priorities/**").hasAuthority(ADMIN)
                 .anyRequest().authenticated()
                 .and()
                 .apply(new JwtConfigurer(jwtTokenProvider))

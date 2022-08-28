@@ -7,7 +7,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-
 @Configuration
 @ComponentScan(basePackages = "com.example.taskmanager")
 public class AppConfig {

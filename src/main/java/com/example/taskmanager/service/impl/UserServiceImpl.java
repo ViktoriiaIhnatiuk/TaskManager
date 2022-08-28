@@ -1,12 +1,14 @@
 package com.example.taskmanager.service.impl;
 
+import com.example.taskmanager.model.Role;
 import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.UserRepository;
 import com.example.taskmanager.service.UserService;
+import java.util.List;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -61,5 +63,23 @@ public class UserServiceImpl implements UserService {
     public User getUserByEmail(String email) {
         return userRepository.findUserByEmail(email).orElseThrow(
                 () -> new RuntimeException("Can`t find user by email " + email));
+    }
+
+    @Override
+    public String getUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
+    }
+
+    @Override
+    public Boolean hasAdminRole(User user) {
+        return user.getRoles().stream()
+                .map(Role::getRoleName).anyMatch(e -> e.equals(Role.RoleName.ADMIN));
+    }
+
+    @Override
+    public User getCurrentAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return getUserByEmail(authentication.getName());
     }
 }

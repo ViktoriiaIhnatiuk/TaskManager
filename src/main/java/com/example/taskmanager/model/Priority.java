@@ -10,19 +10,15 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "statuses")
-public class Status {
+@Table(name = "priorities")
+public class Priority {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Enumerated(value = EnumType.STRING)
-    private StatusName statusName;
+    private PriorityName priorityName;
 
-    public Status() {
-    }
-
-    public Status(StatusName statusName) {
-        this.statusName = statusName;
+    public Priority() {
     }
 
     public Long getId() {
@@ -33,12 +29,12 @@ public class Status {
         this.id = id;
     }
 
-    public StatusName getStatusName() {
-        return statusName;
+    public PriorityName getPriorityName() {
+        return priorityName;
     }
 
-    public void setStatusName(StatusName statusName) {
-        this.statusName = statusName;
+    public void setPriorityName(PriorityName priorityName) {
+        this.priorityName = priorityName;
     }
 
     @Override
@@ -49,27 +45,26 @@ public class Status {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Status status = (Status) o;
-        return Objects.equals(id, status.id) && statusName == status.statusName;
+        Priority priority = (Priority) o;
+        return Objects.equals(id, priority.id) && priorityName == priority.priorityName;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, statusName);
+        return Objects.hash(id, priorityName);
     }
 
     @Override
     public String toString() {
-        return "Status{"
+        return "Priority{"
                 + "id=" + id
-                + ", statusName=" + statusName
+                + ", priorityName=" + priorityName
                 + '}';
     }
 
-    public enum StatusName {
-        TO_DO,
-        IN_PROGRESS,
-        DONE,
-        TERMINATED;
+    public enum PriorityName {
+        LOW,
+        MEDIUM,
+        HIGH;
     }
 }

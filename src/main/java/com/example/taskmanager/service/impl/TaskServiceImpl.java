@@ -1,20 +1,21 @@
 package com.example.taskmanager.service.impl;
 
+import com.example.taskmanager.model.Priority;
 import com.example.taskmanager.model.Status;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.TaskList;
+import com.example.taskmanager.model.User;
+import com.example.taskmanager.repository.TaskListRepository;
 import com.example.taskmanager.repository.TaskRepository;
+import com.example.taskmanager.service.PriorityService;
 import com.example.taskmanager.service.StatusService;
 import com.example.taskmanager.service.TaskListServise;
 import com.example.taskmanager.service.TaskService;
 import com.example.taskmanager.service.UserService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -22,28 +23,34 @@ public class TaskServiceImpl implements TaskService {
     private final StatusService statusService;
     private final TaskListServise taskListServise;
     private final UserService userService;
+    private final TaskListRepository taskListRepository;
+    private final PriorityService priorityService;
 
     public TaskServiceImpl(TaskRepository taskRepository,
                            StatusService statusService,
                            TaskListServise taskListServise,
-                           UserService userService) {
+                           UserService userService,
+                           TaskListRepository taskListRepository,
+                           PriorityService priorityService) {
         this.taskRepository = taskRepository;
         this.statusService = statusService;
         this.taskListServise = taskListServise;
         this.userService = userService;
+        this.taskListRepository = taskListRepository;
+        this.priorityService = priorityService;
     }
 
     @Transactional
     @Override
     public Task creteTask(Long taskListId, Task task) {
         TaskList taskListById = taskListServise.getTaskListById(taskListId);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentPrincipalName = authentication.getName();
-        if (taskListById.getUser() != userService.getUserByEmail(currentPrincipalName)) {
+        if (!userService.hasAdminRole(userService.getCurrentAuthenticatedUser())
+                && taskListById.getUser() != userService.getUserByEmail(
+                        userService.getUserEmail())) {
             throw new RuntimeException("Please, choose a correct tasklist");
         }
         if (task.getStatus() == null) {
-            task.setStatus(statusService.getStatusByName(Status.StatusName.TO_DO));
+            task.setStatus(statusService.getStatusByName(String.valueOf(Status.StatusName.TO_DO)));
         }
         if (!taskListById.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
             task.setTaskList(taskListById);
@@ -52,9 +59,13 @@ public class TaskServiceImpl implements TaskService {
                     + taskListId + "because tasklist is already done");
         }
         if (task.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
-            task.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
-            System.out.println("You can not create task with status \"Done\"," +
-                    "task has got status \"In progress\"");
+            task.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS.name()));
+            System.out.println("You can not create task with status \"Done\","
+                    + "task has got status \"In progress\"");
+        }
+        if (task.getPriority() == null) {
+            task.setPriority(priorityService
+                    .getPriorityByName(Priority.PriorityName.MEDIUM.name()));
         }
         Task newTask = taskRepository.save(task);
         if (newTask != null) {
@@ -62,23 +73,31 @@ public class TaskServiceImpl implements TaskService {
             tasks.add(newTask);
             taskListById.setTasks(tasks);
             taskListServise.createTaskList(taskListById);
+            taskListStatusUpdate(newTask);
         }
-        taskListStatusUpdate(newTask);
         return newTask;
     }
 
     @Override
     public Task getTaskById(Long taskId) {
-        return taskRepository.findById(taskId).orElseThrow(
-                () -> new RuntimeException("Can't find task by id " + taskId)
-        );
+        User currentUser = userService.getCurrentAuthenticatedUser();
+        if (userService.hasAdminRole(currentUser)) {
+            return taskRepository.findById(taskId).orElseThrow(
+                () -> new RuntimeException("Can't find task by id " + taskId));
+        } else {
+            return taskRepository.findByIdAndUserName(taskId,
+                    currentUser.getId()).orElseThrow(
+                        () -> new RuntimeException("Can't find task by id " + taskId));
+        }
     }
 
     @Override
     public List<Task> getAllTasks() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentPrincipalName = authentication.getName();
-        return taskRepository.getAllTasksByUserEmail(currentPrincipalName);
+        if (userService.hasAdminRole(userService.getCurrentAuthenticatedUser())) {
+            return taskRepository.findAll();
+        } else {
+            return taskRepository.getAllTasksByUserEmail(userService.getUserEmail());
+        }
     }
 
     @Transactional
@@ -95,18 +114,21 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.save(taskToUpdate);
     }
 
+    @Transactional
     @Override
     public Task deleteTaskById(Long taskId) {
         Task taskToDelete = getTaskById(taskId);
         taskRepository.delete(taskToDelete);
+        updateTaskListStatusAfterTaskDeleting(taskToDelete);
         return taskToDelete;
     }
 
     private void taskListStatusUpdate(Task taskToUpdate) {
         TaskList taskList = taskToUpdate.getTaskList();
         Long doneTasksCounter = taskList.getCounter();
+        LocalDateTime deadLine = taskList.getDeadline();
         if (!taskList.getStatus().getStatusName().equals(taskToUpdate.getStatus().getStatusName())
-        && taskToUpdate.getStatus().getId() > taskList.getStatus().getId()
+                && taskToUpdate.getStatus().getId() > taskList.getStatus().getId()
                 && !taskToUpdate.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
             taskList.setStatus(taskToUpdate.getStatus());
         }
@@ -114,29 +136,50 @@ public class TaskServiceImpl implements TaskService {
         if (!taskList.getStatus().getStatusName().equals(Status.StatusName.DONE)
                 && !taskList.getStatus().getStatusName().equals(Status.StatusName.IN_PROGRESS)
                 && taskToUpdate.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
-            taskList.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS));
+            taskList.setStatus(statusService.getStatusByName(Status.StatusName.IN_PROGRESS.name()));
         }
 
         if (taskToUpdate.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
-            taskToUpdate.setDate(LocalDateTime.now());
+            LocalDateTime date = LocalDateTime.now();
+            taskToUpdate.setDate(date);
+            if (deadLine != null && date.isAfter(deadLine)) {
+                taskToUpdate.setIsTerminated(true);
+                taskList.setIsTerminated(true);
+            }
             doneTasksCounter++;
             taskList.setCounter(doneTasksCounter);
         }
 
-        if(doneTasksCounter == taskList.getTasks().size()
-        && ! (taskList.getTasks().stream()
-                .map(Task::getDate)
-                .filter(e -> e.isAfter(taskList.getDeadline()))
-                .count() > 0)) {
-            taskList.setStatus(statusService.getStatusByName(Status.StatusName.DONE));
-
-        } else if (doneTasksCounter == taskList.getTasks().size()
+        if (doneTasksCounter == taskList.getTasks().size()
                 && (taskList.getTasks().stream()
                 .map(Task::getDate)
-                .filter(e -> e.isAfter(taskList.getDeadline()))
-                .count() > 0)){
-            taskList.setStatus(statusService.getStatusByName(Status.StatusName.TERMINATED));
+                .anyMatch(e -> e.isAfter(taskList.getDeadline())))) {
+            taskList.setIsTerminated(true);
         }
-        taskListServise.createTaskList(taskList);
+        if (doneTasksCounter == taskList.getTasks().size()) {
+            taskList.setStatus(statusService.getStatusByName(Status.StatusName.DONE.name()));
+        }
+        taskListRepository.save(taskList);
+    }
+
+    private void updateTaskListStatusAfterTaskDeleting(Task taskToDelete) {
+        TaskList taskList = taskToDelete.getTaskList();
+        Long id = taskList.getId();
+        long counter = taskList.getCounter();
+        if (taskToDelete.getStatus().getStatusName().equals(Status.StatusName.DONE)) {
+            taskList.setCounter(--counter);
+        }
+        if (!taskToDelete.getStatus().getStatusName().equals(Status.StatusName.TO_DO)
+                && taskListServise.getTaskListById(id).getTasks().stream()
+                .map(Task::getStatus)
+                .allMatch(e -> e.getStatusName().equals(Status.StatusName.TO_DO))) {
+            taskList.setStatus(statusService.getStatusByName(Status.StatusName.TO_DO.name()));
+        }
+        if (taskToDelete.getIsTerminated()
+                && taskList.getTasks().stream()
+                .noneMatch(Task::getIsTerminated)) {
+            taskList.setIsTerminated(false);
+        }
+        taskListRepository.save(taskList);
     }
 }
