@@ -2,6 +2,7 @@ package com.example.taskmanager.security;
 
 import com.example.taskmanager.model.User;
 import com.example.taskmanager.service.UserService;
+import javax.transaction.Transactional;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,14 +17,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userService.getUserByEmail(email);
-        org.springframework.security.core.userdetails.User.UserBuilder builder =
-                org.springframework.security.core.userdetails.User.withUsername(email);
-        builder.password(user.getPassword());
-        builder.authorities(user.getRoles().stream()
-                .map(role -> role.getRoleName().name())
-                .toArray(String[]:: new));
-        return builder.build();
+        return CustomUserDetails.build(user);
     }
 }
+

@@ -2,8 +2,10 @@ package com.example.taskmanager.config;
 
 import com.example.taskmanager.model.Role;
 import com.example.taskmanager.security.jwt.JwtConfigurer;
+import com.example.taskmanager.security.jwt.JwtTokenFilter;
 import com.example.taskmanager.security.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -32,6 +34,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
+    @Bean
+    public JwtTokenFilter jwtTokenFilter() {
+        return new JwtTokenFilter(jwtTokenProvider);
+    }
+
     @Autowired
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
@@ -52,11 +59,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/tasklists/**").hasAnyAuthority(ADMIN, USER)
                 .antMatchers(HttpMethod.POST,
                         "/tasklists/**").hasAnyAuthority(ADMIN, USER)
+                .antMatchers(HttpMethod.DELETE,
+                        "/tasklists/**").hasAnyAuthority(ADMIN, USER)
                 .antMatchers(HttpMethod.GET,
                         "/tasks/**").hasAnyAuthority(ADMIN, USER)
                 .antMatchers(HttpMethod.PUT,
                         "/tasks/**").hasAnyAuthority(ADMIN, USER)
                 .antMatchers(HttpMethod.POST,
+                        "/tasks/**").hasAnyAuthority(ADMIN, USER)
+                .antMatchers(HttpMethod.DELETE,
                         "/tasks/**").hasAnyAuthority(ADMIN, USER)
                 .antMatchers(HttpMethod.GET,
                         "/users/**").hasAuthority(ADMIN)
@@ -64,19 +75,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/users/**").hasAuthority(ADMIN)
                 .antMatchers(HttpMethod.POST,
                         "/users/**").hasAuthority(ADMIN)
-                .antMatchers(HttpMethod.GET,
-                        "/statuses/**").hasAuthority(ADMIN)
-                .antMatchers(HttpMethod.PUT,
-                        "/statuses/**").hasAuthority(ADMIN)
-                .antMatchers(HttpMethod.POST,
-                        "/statuses/**").hasAuthority(ADMIN)
-                .antMatchers(HttpMethod.GET,
-                        "/priorities/**").hasAuthority(ADMIN)
-                .antMatchers(HttpMethod.PUT,
-                        "/priorities/**").hasAuthority(ADMIN)
-                .antMatchers(HttpMethod.POST,
-                        "/priorities/**").hasAuthority(ADMIN)
-                .anyRequest().authenticated()
+                .antMatchers(HttpMethod.DELETE,
+                        "/users/**").hasAuthority(ADMIN)
+                .anyRequest()
+                .authenticated()
                 .and()
                 .apply(new JwtConfigurer(jwtTokenProvider))
                 .and()

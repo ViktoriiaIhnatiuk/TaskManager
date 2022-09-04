@@ -7,7 +7,6 @@ import com.example.taskmanager.repository.UserRepository;
 import com.example.taskmanager.service.AuthenticationService;
 import com.example.taskmanager.service.RoleService;
 import com.example.taskmanager.service.UserService;
-import java.util.Optional;
 import java.util.Set;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -42,11 +41,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public User login(String email, String password) throws AuthenticationException {
-        Optional<User> user = userRepository.findUserByEmail(email);
-        String encodedPassword = passwordEncoder.encode(password);
-        if (user.isEmpty() || user.get().getPassword().equals(encodedPassword)) {
-            throw new AuthenticationException("Incorrect username or password!!!");
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("Incorrect username or password!"));
+
+        if (user.getEmail().equals(email)
+                && passwordEncoder.matches(password, user.getPassword())) {
+            return user;
+        } else {
+            throw new AuthenticationException("Incorrect username or password!");
         }
-        return user.get();
     }
 }

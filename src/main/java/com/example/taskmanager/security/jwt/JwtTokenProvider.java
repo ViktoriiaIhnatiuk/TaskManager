@@ -23,7 +23,7 @@ public class JwtTokenProvider {
     private static final int BEGIN_INDEX = 7;
     @Value("${security.jwt.token.secret-key:secret}")
     private String secretKey;
-    @Value("${security.jwt.token.expire-length:360000}")
+    @Value("${security.jwt.token.expire-length:3600000}")
     private Long validityInMilliseconds;
     private final UserDetailsService userDetailsService;
 
