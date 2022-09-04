@@ -1,9 +1,10 @@
 package com.example.taskmanager.config;
 
 import com.example.taskmanager.model.Role;
-import com.example.taskmanager.security.jwt.JwtConfigurer;
+import com.example.taskmanager.security.jwt.JwtTokenFilter;
 import com.example.taskmanager.security.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -32,6 +34,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
+    @Bean
+    public JwtTokenFilter jwtTokenFilter() {
+        return new JwtTokenFilter(jwtTokenProvider);
+    }
     @Autowired
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
@@ -76,10 +82,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/priorities/**").hasAuthority(ADMIN)
                 .antMatchers(HttpMethod.POST,
                         "/priorities/**").hasAuthority(ADMIN)
-                .anyRequest().authenticated()
-                .and()
-                .apply(new JwtConfigurer(jwtTokenProvider))
-                .and()
-                .headers().frameOptions().disable();
+                .anyRequest().authenticated();
+
+        http
+                .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }

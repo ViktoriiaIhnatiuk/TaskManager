@@ -7,6 +7,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
     private final UserService userService;
@@ -15,15 +17,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userService = userService;
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+@Override
+@Transactional
+public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userService.getUserByEmail(email);
-        org.springframework.security.core.userdetails.User.UserBuilder builder =
-                org.springframework.security.core.userdetails.User.withUsername(email);
-        builder.password(user.getPassword());
-        builder.authorities(user.getRoles().stream()
-                .map(role -> role.getRoleName().name())
-                .toArray(String[]:: new));
-        return builder.build();
-    }
+        return CustomUserDetails.build(user);
+        }
 }
+
