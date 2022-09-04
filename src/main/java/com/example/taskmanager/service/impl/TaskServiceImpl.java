@@ -44,9 +44,9 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task creteTask(Long taskListId, Task task) {
         TaskList taskListById = taskListServise.getTaskListById(taskListId);
-        if (!userService.hasAdminRole(userService.getCurrentAuthenticatedUser())
-                && taskListById.getUser() != userService.getUserByEmail(
-                        userService.getUserEmail())) {
+        User currentUser = userService.getCurrentAuthenticatedUser();
+        if (!userService.hasAdminRole(currentUser)
+                && taskListById.getUser() != currentUser) {
             throw new RuntimeException("Please, choose a correct tasklist");
         }
         if (task.getStatus() == null) {
@@ -83,7 +83,7 @@ public class TaskServiceImpl implements TaskService {
         User currentUser = userService.getCurrentAuthenticatedUser();
         if (userService.hasAdminRole(currentUser)) {
             return taskRepository.findById(taskId).orElseThrow(
-                () -> new RuntimeException("Can't find task by id " + taskId));
+                    () -> new RuntimeException("Can't find task by id " + taskId));
         } else {
             return taskRepository.findByIdAndUserName(taskId,
                     currentUser.getId()).orElseThrow(
@@ -93,10 +93,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<Task> getAllTasks() {
+        User currentUser = userService.getCurrentAuthenticatedUser();
         if (userService.hasAdminRole(userService.getCurrentAuthenticatedUser())) {
             return taskRepository.findAll();
         } else {
-            return taskRepository.getAllTasksByUserEmail(userService.getUserEmail());
+            return taskRepository.getAllTasksByUserEmail(currentUser.getEmail());
         }
     }
 
@@ -151,6 +152,7 @@ public class TaskServiceImpl implements TaskService {
         }
 
         if (doneTasksCounter == taskList.getTasks().size()
+                && taskList.getDeadline() != null
                 && (taskList.getTasks().stream()
                 .map(Task::getDate)
                 .anyMatch(e -> e.isAfter(taskList.getDeadline())))) {

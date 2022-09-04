@@ -3,6 +3,7 @@ package com.example.taskmanager.service.impl;
 import com.example.taskmanager.model.Role;
 import com.example.taskmanager.model.User;
 import com.example.taskmanager.repository.UserRepository;
+import com.example.taskmanager.security.CustomUserDetails;
 import com.example.taskmanager.service.UserService;
 import java.util.List;
 import org.springframework.security.core.Authentication;
@@ -68,7 +69,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public String getUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication.getName();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        return userDetails.getEmail();
     }
 
     @Override
@@ -80,6 +82,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getCurrentAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return getUserByEmail(authentication.getName());
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        return getUserByEmail(userDetails.getEmail());
     }
 }

@@ -10,8 +10,6 @@ import com.example.taskmanager.service.StatusService;
 import com.example.taskmanager.service.TaskListServise;
 import com.example.taskmanager.service.UserService;
 import java.util.List;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,10 +41,8 @@ public class TaskListServiceImpl implements TaskListServise {
             taskList.setPriority(priorityService
                     .getPriorityByName(Priority.PriorityName.MEDIUM.name()));
         }
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentPrincipalName = authentication.getName();
         if (!userService.hasAdminRole(currentUser)) {
-            taskList.setUser(userService.getUserByEmail(currentPrincipalName));
+            taskList.setUser(currentUser);
         }
         return taskListRepository.save(taskList);
     }
@@ -60,16 +56,17 @@ public class TaskListServiceImpl implements TaskListServise {
         } else {
             return taskListRepository.findByIdAndUserName(taskListId,
                     currentUser.getId()).orElseThrow(
-                            () -> new RuntimeException("Can't find taskList by id " + taskListId));
+                        () -> new RuntimeException("Can't find taskList by id " + taskListId));
         }
     }
 
     @Override
     public List<TaskList> getAllTaskLists() {
+        User currentUser = userService.getCurrentAuthenticatedUser();
         if (userService.hasAdminRole(userService.getCurrentAuthenticatedUser())) {
             return taskListRepository.findAll();
         } else {
-            return taskListRepository.getAllByUserName(userService.getUserEmail());
+            return taskListRepository.getAllByUserName(currentUser.getEmail());
         }
     }
 
