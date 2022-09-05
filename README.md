@@ -46,7 +46,7 @@ About the app
 * User can't add a new tsk to tasklist in "DONE" status;
 * Finish date sets to task automatically when "DONE" status has got;
 * Task's "terminated" getting "true" automatically if the finish date is after than tasklist's deadline(if present);
-* Task's "terminated" getting "true" automatically when at least one of the task got "terminated: true";
+* Tasklist's "terminated" getting "true" automatically when at least one of the task got "terminated: true";
 * Task has "MEDIUM" priority by default, but user can set other priority for task when creating or anytime after;
 
 Technologies
