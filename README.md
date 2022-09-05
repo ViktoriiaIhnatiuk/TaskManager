@@ -27,6 +27,7 @@ About the app
 -----------
 * All incoming and outgoing data converted to JSON format;
 * List of embedded roles:
+
       1. ADMIN;
       2. USER;
 * List of embedded tasks/tasklists statuses:
