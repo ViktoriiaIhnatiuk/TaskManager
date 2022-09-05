@@ -41,11 +41,11 @@ About the app
       2. MEDIUM;
       3. HIGH;
 * USER can create/update/read/delete his own tasklists and tasks only, but ADMIN can create/update/read/delete tasklists and tasks for any user;
-* Task and/or tasklist has "TO_DO" status by default, but user can set other status for task and/or tasklist when creating or anytime after.
-* Tasklist changes it's status to "IN_PROGRESS" automatically when at least one of the tasks got status, defferent from "TO_DO".
+* Task and/or tasklist has "TO_DO" status by default, but user can set other status for task and/or tasklist when creating or anytime after;
+* Tasklist changes it's status to "IN_PROGRESS" automatically when at least one of the tasks got status, different from "TO_DO";
 * Tasklist changes it's status to "DONE" automatically when all the tasks got status "DONE";
 * User can't add a new tsk to tasklist in "DONE" status;
-* Finish date sets to task automatically when "DONE" status has got;
+* Finish date sets to task automatically when "DONE" status has been gotten;
 * Task's "terminated" getting "true" automatically if the finish date is after than tasklist's deadline(if present);
 * Tasklist's "terminated" getting "true" automatically when at least one of the task got "terminated: true";
 * Task has "MEDIUM" priority by default, but user can set other priority for task when creating or anytime after;
